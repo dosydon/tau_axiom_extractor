@@ -1,12 +1,10 @@
 from __future__ import absolute_import
 from applicable import Applicable
+from sas import Axiom
 
-class Axiom(Applicable):
+class AxiomExtended(Axiom):
     def __init__(self, name="axiom", cost=0):
-        Applicable.__init__(self, name)
-        self.is_converted = False
-        self.cost = cost
-
+        Axiom.__init__(self, name, cost)
 
     def substitute(self, primary2secondary):
         if self.is_converted:

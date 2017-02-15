@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-from axiom import Axiom
+from axiom_extended import AxiomExtended
 class ConditionalException(Exception):
     pass
 from collections import defaultdict
@@ -65,7 +65,7 @@ def introduce_reachability_axioms(sas,eff_var,pre_existing_secondary_vars,candid
 
                     outer_req = {var:value for (var,value) in op.requirement.items() if not var in eff_var}
                     outer_req[fr] = 1
-                    axiom = Axiom()
+                    axiom = AxiomExtended()
                     axiom.from_prevail(outer_req,{to:(0,1)})
 #                     print(axiom)
 #                     sas.axioms.add(axiom.get_under_prop(sas,prop,pre_existing_secondary_vars,eff_var))
@@ -84,13 +84,13 @@ def introduce_base_axioms(sas,eff_var,inner_goal,max_layer):
         sas.primary2secondary[prop] = second
         sas.initial_assignment[second] = 0
 
-        axiom = Axiom()
+        axiom = AxiomExtended()
         axiom.from_prevail({x:y for (x,y) in prop},{second:(0,1)})
         sas.axioms.add(axiom)
 
 
         if inner_goal and set(inner_goal) <= set(prop):
-            goal_axiom = Axiom()
+            goal_axiom = AxiomExtended()
             goal_axiom.from_prevail({second:1},{goal_var:(0,1)})
             sas.axioms.add(goal_axiom)
 

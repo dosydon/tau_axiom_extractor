@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-from op import Operator
-from axiom import Axiom
 from collections import defaultdict
 from sas3_extended import SAS3Extended
 import argparse
