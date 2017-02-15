@@ -101,7 +101,7 @@ class SASExtended(ABC):
             effect[var] = (fr,to)
 
         cost = int(lines[-1])
-        new_operator = Operator(name,cost)
+        new_operator = OperatorExtended(name,cost)
         new_operator.from_prevail(prevail,effect)
         self.removed_operators.add(new_operator)
 
@@ -121,7 +121,7 @@ class SASExtended(ABC):
             effect[var] = (fr,to)
 
         cost = int(lines[-1])
-        new_operator = Operator(name,cost)
+        new_operator = OperatorExtended(name,cost)
         new_operator.from_prevail(prevail,effect)
         self.remained_operators.add(new_operator)
 

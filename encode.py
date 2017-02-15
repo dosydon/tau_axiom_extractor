@@ -16,9 +16,6 @@ import os
 import psutil
 from sas3_extended import SAS3Extended
 
-
-
-
 # changes sas in place
 def encode(sas,candidates):
     eff_var = {var for op in candidates for var,to in op.achievement.items() if sas.is_essential(var)}
