@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from applicable import Applicable
 from sas import Axiom
 
 class AxiomExtended(Axiom):

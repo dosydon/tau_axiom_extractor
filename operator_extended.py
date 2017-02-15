@@ -1,4 +1,25 @@
 from sas import Operator
+def encode_operator(original_op, primary2secondary, original_secondary_var, eff_var):
+    op = OperatorExtended(original_op.name, original_op.cost)
+
+    primary_req = {(var,value) for var,value in original_op.requirement.items() if not var in original_secondary_var}
+    secondary_req = {(var,value) for var,value in original_op.requirement.items() if var in original_secondary_var}
+    inner_req = {(var,value) for (var,value) in primary_req if var in eff_var}
+    inner_ach = {(var,value) for (var,value) in original_op.achievement.items() if var in eff_var}
+    prop = tuple(sorted(inner_req))
+
+    outer_req = {var:value for (var,value) in primary_req if not var in eff_var}
+    outer_req[primary2secondary[prop]] = 1
+    outer_req.update({var:value for (var,value) in secondary_req})
+
+    achievement = original_op.achievement.copy()
+    for var,value in inner_req:
+        achievement[var] = value
+    for var,value in inner_ach:
+        achievement[var] = value
+
+    op.from_requirement(outer_req,achievement)
+    return op
 
 class OperatorExtended(Operator):
     def __init__(self,name,cost):
@@ -10,6 +31,7 @@ class OperatorExtended(Operator):
         inner_req = {(var,value) for (var,value) in primary_req if var in eff_var}
         inner_ach = {(var,value) for (var,value) in self.achievement.items() if var in eff_var}
         prop = tuple(sorted(inner_req))
+        print(prop)
 
         outer_req = {var:value for (var,value) in primary_req if not var in eff_var}
         outer_req[sas.primary2secondary[prop]] = 1
