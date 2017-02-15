@@ -5,7 +5,7 @@ class ConditionalException(Exception):
     pass
 from collections import defaultdict
 from state import State
-from op import Operator
+from operator_extended import OperatorExtended
 from preprocess import normalize
 from stratification import stratify
 from candidate import bottom_up_candidates,top_down_candidates
@@ -41,7 +41,7 @@ def encode(sas,candidates):
     sas.operators = [op for op in sas.operators if not op in candidates]
     sas.removed_operators = set(candidates)
     for op in sas.operators:
-        remained_op = Operator(op.name,op.cost)
+        remained_op = OperatorExtended(op.name,op.cost)
         remained_op.from_prevail(op.prevail.copy(),op.effect.copy())
         sas.remained_operators.add(remained_op)
         op.substitute(sas,pre_existing_secondary_vars,eff_var)
