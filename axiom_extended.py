@@ -42,15 +42,6 @@ class AxiomExtended(Axiom):
                 axiom.from_requirement(new_requirement, {eff_var:eff_val})
             return axiom
 
-
-    def __repr__(self):
-        prevail = str(sorted(self.prevail.items()))
-        effect = str(sorted(self.effect.items()))
-        return prevail + " -> " +effect
-
-    def __lt__(self, other):
-        return str(self) < str(other)
-
     def axiom2op(self):
         assert self.is_converted
         op = Operator(self.name, self.cost)
