@@ -45,7 +45,6 @@ def top_down_candidates(sas):
         eff_var = frozenset({var for var,to in op.achievement.items()})
         pre_var = frozenset({var for var,to in op.requirement.items()})
         for item in candidate_vars:
-            print(item)
             if pre_var >= item:
                 new_vars.add(item)
             elif eff_var <= item:
