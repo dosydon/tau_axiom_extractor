@@ -70,3 +70,4 @@ class OperatorExtended(Operator):
         for var,value in inner_ach:
             self.achievement[var] = value
         self.from_requirement(outer_req,self.achievement)
+
