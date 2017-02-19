@@ -1,25 +1,25 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-from collections import defaultdict
-from state import State
-from encode_observable_operator import encode_observable_operator
-from preprocess import normalize
-from stratification import stratify
-from candidate import bottom_up_candidates,top_down_candidates
 import argparse
 import itertools
 import time
 import os
 import psutil
 import copy
+from collections import defaultdict
+from state import State
+from encode_observable_operator import encode_observable_operator
+from preprocess import normalize
+from stratification import stratify
+from candidate import bottom_up_candidates,top_down_candidates
 from sas3_extended import SAS3Extended
 from sas import Operator, Axiom
 
 class ConditionalException(Exception):
     pass
 
-def encode(sas,candidates):
-    eff_var = {var for op in candidates for var,to in op.achievement.items() if sas.is_essential(var)}
+def encode(sas,tau_operators):
+    eff_var = {var for op in tau_operators for var,to in op.achievement.items() if sas.is_essential(var)}
     inner_goal = {(var,value) for var,value in sas.goal.items() if var in eff_var}
     outer_goal = {var:value for var,value in sas.goal.items() if not var in eff_var}
 
@@ -30,7 +30,7 @@ def encode(sas,candidates):
     mutex_group = sas.mutex_group.copy()
     axiom_layer = sas.axiom_layer.copy()
     metric = sas.metric
-    operators = [op for op in sas.operators if not op in candidates]
+    operators = [op for op in sas.operators if not op in tau_operators]
 
     encoded = SAS3Extended(primary_var=primary_var, initial_assignment = initial_assignment, axiom_layer = axiom_layer, removed_goal = removed_goal, goal=goal, metric = metric, mutex_group = mutex_group)
 
@@ -38,10 +38,10 @@ def encode(sas,candidates):
 
     introduce_base_axioms(encoded,eff_var,inner_goal,max_layer)
 
-    rechability_axioms = get_reachability_axioms(primary_var, axiom_layer, encoded.primary2secondary ,eff_var, candidates)
+    rechability_axioms = get_reachability_axioms(primary_var, axiom_layer, encoded.primary2secondary ,eff_var, tau_operators)
     encoded.axioms.update(rechability_axioms)
 
-    encoded.removed_operators = set(candidates)
+    encoded.removed_operators = set(tau_operators)
     for op in operators:
         remained_op = Operator(op.name,op.cost)
         remained_op.from_prevail(op.prevail.copy(),op.effect.copy())
@@ -49,12 +49,12 @@ def encode(sas,candidates):
         encoded.operators.append(encode_observable_operator(op, encoded.primary2secondary, set(), eff_var))
     return encoded
 
-def get_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_var,candidates):
+def get_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_var,tau_operators):
     axioms = set()
     for prop in itertools.product(*[[(var,value) for value in primary_var[var]] for var in sorted(eff_var)]):
         assignment = {var:value for (var,value) in prop}
         state = State(assignment)
-        for op in candidates:
+        for op in tau_operators:
             if op.is_applicable(state):
                 new_assignment = {var:value for (var,value) in prop}
                 res = State(new_assignment)
@@ -113,21 +113,20 @@ if __name__ == '__main__':
 
     try:
         candidate_gen_table = {
-                'bottom':bottom_up_candidates,'top':top_down_candidates}
+                'bottom':bottom_up_tau_operators,'top':top_down_tau_operators}
         candidate_gen = candidate_gen_table[args.candidate_gen]
         start = time.time()
         try:
-            candidates = candidate_gen(sas)
+            tau_operators = candidate_gen(sas)
         finally:
             end = time.time()
             print("Candidate Time: {}s".format(end-start))
-        print("# of removed operators : {}".format(len(candidates)))
-        sas = encode(sas,candidates)
+        print("# of removed operators : {}".format(len(tau_operators)))
+        sas = encode(sas,tau_operators)
 
         normalize(sas)
         with open(args.output,"w") as f:
             print(sas,file=f)
-#             sas.write(f)
     except Exception as e:
         raise e
     finally:
