@@ -26,6 +26,16 @@ class TestSas(unittest.TestCase):
             original_sas = encode(original_sas,candidates)
         self.assertEqual(str(original_sas),str(encoded_sas))
 
+    def test_gripper01_extracted_top_down(self):
+        file_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+        original_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/gripper01.sas'))
+        encoded_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/gripper01_extracted.sas'))
+
+        candidates = top_down_candidates(original_sas)
+        if len(candidates) > 0:
+            original_sas = encode(original_sas,candidates)
+        self.assertEqual(str(original_sas),str(encoded_sas))
+
 if __name__ == '__main__':
     unittest.main()
 
