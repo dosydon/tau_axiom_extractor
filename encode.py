@@ -32,7 +32,7 @@ def encode(sas,candidates):
     metric = sas.metric
     operators = [op for op in sas.operators if not op in candidates]
 
-    encoded = SAS3Extended(primary_var=primary_var, initial_assignment = initial_assignment, axiom_layer = axiom_layer, removed_goal = removed_goal, goal=goal, metric = metric, mutex_group = mutex_group, operators = operators)
+    encoded = SAS3Extended(primary_var=primary_var, initial_assignment = initial_assignment, axiom_layer = axiom_layer, removed_goal = removed_goal, goal=goal, metric = metric, mutex_group = mutex_group)
 
     max_layer = max([layer for layer in sas.axiom_layer.values()]) + 1
 
@@ -41,11 +41,11 @@ def encode(sas,candidates):
     introduce_reachability_axioms(encoded,eff_var,set(),candidates)
 
     encoded.removed_operators = set(candidates)
-    for op in encoded.operators:
+    for op in operators:
         remained_op = OperatorExtended(op.name,op.cost)
         remained_op.from_prevail(op.prevail.copy(),op.effect.copy())
         encoded.remained_operators.add(remained_op)
-        op.substitute(encoded,set(),eff_var)
+        encoded.operators.append(encode_operator(op, encoded.primary2secondary, set(), eff_var))
     return encoded
 
 def introduce_reachability_axioms(sas,eff_var,pre_existing_secondary_vars,candidates):
