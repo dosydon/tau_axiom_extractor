@@ -1,8 +1,5 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-from axiom_extended import AxiomExtended
-class ConditionalException(Exception):
-    pass
 from collections import defaultdict
 from state import State
 from encode_observable_operator import encode_observable_operator
@@ -16,7 +13,10 @@ import os
 import psutil
 import copy
 from sas3_extended import SAS3Extended
-from sas import Operator
+from sas import Operator, Axiom
+
+class ConditionalException(Exception):
+    pass
 
 # changes sas in place
 def encode(sas,candidates):
@@ -65,7 +65,7 @@ def introduce_reachability_axioms(sas,eff_var,pre_existing_secondary_vars,candid
 
                     outer_req = {var:value for (var,value) in op.requirement.items() if not var in eff_var}
                     outer_req[fr] = 1
-                    axiom = AxiomExtended()
+                    axiom = Axiom()
                     axiom.from_prevail(outer_req,{to:(0,1)})
                     sas.axioms.add(axiom)
 
@@ -81,13 +81,13 @@ def introduce_base_axioms(sas,eff_var,inner_goal,max_layer):
         sas.primary2secondary[prop] = second
         sas.initial_assignment[second] = 0
 
-        axiom = AxiomExtended()
+        axiom = Axiom()
         axiom.from_prevail({x:y for (x,y) in prop},{second:(0,1)})
         sas.axioms.add(axiom)
 
 
         if inner_goal and set(inner_goal) <= set(prop):
-            goal_axiom = AxiomExtended()
+            goal_axiom = Axiom()
             goal_axiom.from_prevail({second:1},{goal_var:(0,1)})
             sas.axioms.add(goal_axiom)
 
