@@ -18,17 +18,16 @@ from sas import Operator, Axiom
 class ConditionalException(Exception):
     pass
 
-# changes sas in place
 def encode(sas,candidates):
     eff_var = {var for op in candidates for var,to in op.achievement.items() if sas.is_essential(var)}
     inner_goal = {(var,value) for var,value in sas.goal.items() if var in eff_var}
     outer_goal = {var:value for var,value in sas.goal.items() if not var in eff_var}
 
     primary_var = copy.deepcopy(sas.primary_var)
-    initial_assignment = copy.copy(sas.initial_assignment)
-    removed_goal = copy.copy(sas.goal)
+    initial_assignment = sas.initial_assignment.copy()
+    removed_goal = sas.goal.copy()
     goal = outer_goal
-    mutex_group = copy.copy(sas.mutex_group)
+    mutex_group = sas.mutex_group.copy()
     axiom_layer = sas.axiom_layer.copy()
     metric = sas.metric
     operators = [op for op in sas.operators if not op in candidates]
@@ -39,7 +38,8 @@ def encode(sas,candidates):
 
     introduce_base_axioms(encoded,eff_var,inner_goal,max_layer)
 
-    introduce_reachability_axioms(encoded,eff_var,candidates)
+    rechability_axioms = get_reachability_axioms(primary_var, axiom_layer, encoded.primary2secondary ,eff_var, candidates)
+    encoded.axioms.update(rechability_axioms)
 
     encoded.removed_operators = set(candidates)
     for op in operators:
@@ -49,8 +49,9 @@ def encode(sas,candidates):
         encoded.operators.append(encode_observable_operator(op, encoded.primary2secondary, set(), eff_var))
     return encoded
 
-def introduce_reachability_axioms(sas,eff_var,candidates):
-    for prop in itertools.product(*[[(var,value) for value in sas.primary_var[var]] for var in sorted(eff_var)]):
+def get_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_var,candidates):
+    axioms = set()
+    for prop in itertools.product(*[[(var,value) for value in primary_var[var]] for var in sorted(eff_var)]):
         assignment = {var:value for (var,value) in prop}
         state = State(assignment)
         for op in candidates:
@@ -58,16 +59,17 @@ def introduce_reachability_axioms(sas,eff_var,candidates):
                 new_assignment = {var:value for (var,value) in prop}
                 res = State(new_assignment)
                 res.apply(op)
-                new_prop = tuple(((var,value) for (var,value) in res.assignment.items() if sas.is_essential(var)))
+                new_prop = tuple(((var,value) for (var,value) in res.assignment.items() if axiom_layer[var] == -1))
                 if not prop == new_prop:
-                    fr = sas.primary2secondary[prop]
-                    to = sas.primary2secondary[new_prop]
+                    fr = primary2secondary[prop]
+                    to = primary2secondary[new_prop]
 
                     outer_req = {var:value for (var,value) in op.requirement.items() if not var in eff_var}
                     outer_req[fr] = 1
                     axiom = Axiom()
                     axiom.from_prevail(outer_req,{to:(0,1)})
-                    sas.axioms.add(axiom)
+                    axioms.add(axiom)
+    return axioms
 
 def introduce_base_axioms(sas,eff_var,inner_goal,max_layer):
     if inner_goal:
@@ -90,36 +92,6 @@ def introduce_base_axioms(sas,eff_var,inner_goal,max_layer):
             goal_axiom = Axiom()
             goal_axiom.from_prevail({second:1},{goal_var:(0,1)})
             sas.axioms.add(goal_axiom)
-
-# def copy_secondary_vars(sas,eff_var,pre_existing_secondary_vars):
-#     for index in pre_existing_secondary_vars:
-#         for prop in itertools.product(*[[(var,value) for value in sas.primary_var[var]] for var in eff_var]):
-#             values = sas.secondary_var[index]
-#             new_index = sas.add_secondary({0:values[0] + " under " + str(prop),1:values[1] + " under " + str(prop)},sas.axiom_layer[index])
-#             sas.prop2under[prop][index] = new_index
-#             sas.initial_assignment[new_index] = sas.initial_assignment[index]
-#             if index in sas.goal:
-#                 oraxiom = Axiom()
-#                 new_requirement = {sas.prop2under[prop][index]:(2 - sas.initial_assignment[sas.prop2under[prop][index]]) // 2}
-#                 for var,value in prop:
-#                     new_requirement[var] = value
-#                 new_requirement[index] = sas.initial_assignment[index]
-#                 oraxiom.from_requirement(new_requirement,{index:(2 -sas.initial_assignment[index])//2})
-#                 sas.axioms.add(oraxiom)
-
-# def copy_axioms(sas,eff_var,pre_existing_secondary_vars):
-#     for axiom in sas.removed_axioms:
-#         for prop in itertools.product(*[[(var,value) for value in sas.primary_var[var]] for var in eff_var]):
-#             new_axiom = (axiom.get_under_prop(sas,prop,pre_existing_secondary_vars,eff_var))
-#             if new_axiom:
-#                 sas.axioms.add(new_axiom)
-#                 for eff_var,eff_val in axiom.achievement.items():
-#                     oraxiom = Axiom()
-#                     new_requirement = {sas.prop
-#                     oraxiom.from_requirement(new_requirement,{eff_var:eff_val})
-#                     print(eff_var)
-#                     print(sas.prop2under[prop][eff_var])
-
 
 def main(sas,args):
     candidate_gen_table = {
