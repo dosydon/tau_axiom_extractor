@@ -23,7 +23,7 @@ class TestSas(unittest.TestCase):
 
         candidates = top_down_candidates(original_sas)
         if len(candidates) > 0:
-            encode(original_sas,candidates)
+            original_sas = encode(original_sas,candidates)
         self.assertEqual(str(original_sas),str(encoded_sas))
 
 if __name__ == '__main__':

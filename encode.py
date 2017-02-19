@@ -14,6 +14,7 @@ import itertools
 import time
 import os
 import psutil
+import copy
 from sas3_extended import SAS3Extended
 
 # changes sas in place
@@ -22,28 +23,30 @@ def encode(sas,candidates):
     inner_goal = {(var,value) for var,value in sas.goal.items() if var in eff_var}
     outer_goal = {var:value for var,value in sas.goal.items() if not var in eff_var}
 
-    pre_existing_secondary_vars = sas.secondary_var.keys()
-    sas.removed_axioms = sas.axioms.copy()
-    sas.axioms = set()
+    primary_var = copy.deepcopy(sas.primary_var)
+    initial_assignment = copy.copy(sas.initial_assignment)
+    removed_goal = copy.copy(sas.goal)
+    goal = outer_goal
+    mutex_group = copy.copy(sas.mutex_group)
+    axiom_layer = sas.axiom_layer.copy()
+    metric = sas.metric
+    operators = [op for op in sas.operators if not op in candidates]
+
+    encoded = SAS3Extended(primary_var=primary_var, initial_assignment = initial_assignment, axiom_layer = axiom_layer, removed_goal = removed_goal, goal=goal, metric = metric, mutex_group = mutex_group, operators = operators)
+
     max_layer = max([layer for layer in sas.axiom_layer.values()]) + 1
 
-    sas.removed_goal = sas.goal
-    sas.goal = outer_goal
+    introduce_base_axioms(encoded,eff_var,inner_goal,max_layer)
 
-    introduce_base_axioms(sas,eff_var,inner_goal,max_layer)
+    introduce_reachability_axioms(encoded,eff_var,set(),candidates)
 
-#     copy_secondary_vars(sas,eff_var,pre_existing_secondary_vars)
-    introduce_reachability_axioms(sas,eff_var,pre_existing_secondary_vars,candidates)
-
-    sas.operators = [op for op in sas.operators if not op in candidates]
-    sas.removed_operators = set(candidates)
-    for op in sas.operators:
+    encoded.removed_operators = set(candidates)
+    for op in encoded.operators:
         remained_op = OperatorExtended(op.name,op.cost)
         remained_op.from_prevail(op.prevail.copy(),op.effect.copy())
-        sas.remained_operators.add(remained_op)
-        op.substitute(sas,pre_existing_secondary_vars,eff_var)
-
-#     copy_axioms(sas,eff_var,pre_existing_secondary_vars)
+        encoded.remained_operators.add(remained_op)
+        op.substitute(encoded,set(),eff_var)
+    return encoded
 
 def introduce_reachability_axioms(sas,eff_var,pre_existing_secondary_vars,candidates):
     for prop in itertools.product(*[[(var,value) for value in sas.primary_var[var]] for var in sorted(eff_var)]):
@@ -56,7 +59,6 @@ def introduce_reachability_axioms(sas,eff_var,pre_existing_secondary_vars,candid
                 res.apply(op)
                 new_prop = tuple(((var,value) for (var,value) in res.assignment.items() if sas.is_essential(var)))
                 if not prop == new_prop:
-#                     print("{} -> {}".format(prop,new_prop))
                     fr = sas.primary2secondary[prop]
                     to = sas.primary2secondary[new_prop]
 
@@ -64,10 +66,7 @@ def introduce_reachability_axioms(sas,eff_var,pre_existing_secondary_vars,candid
                     outer_req[fr] = 1
                     axiom = AxiomExtended()
                     axiom.from_prevail(outer_req,{to:(0,1)})
-#                     print(axiom)
-#                     sas.axioms.add(axiom.get_under_prop(sas,prop,pre_existing_secondary_vars,eff_var))
                     sas.axioms.add(axiom)
-
 
 def introduce_base_axioms(sas,eff_var,inner_goal,max_layer):
     if inner_goal:
@@ -107,12 +106,12 @@ def introduce_base_axioms(sas,eff_var,inner_goal,max_layer):
 #                 oraxiom.from_requirement(new_requirement,{index:(2 -sas.initial_assignment[index])//2})
 #                 sas.axioms.add(oraxiom)
 
-def copy_axioms(sas,eff_var,pre_existing_secondary_vars):
-    for axiom in sas.removed_axioms:
-        for prop in itertools.product(*[[(var,value) for value in sas.primary_var[var]] for var in eff_var]):
-            new_axiom = (axiom.get_under_prop(sas,prop,pre_existing_secondary_vars,eff_var))
-            if new_axiom:
-                sas.axioms.add(new_axiom)
+# def copy_axioms(sas,eff_var,pre_existing_secondary_vars):
+#     for axiom in sas.removed_axioms:
+#         for prop in itertools.product(*[[(var,value) for value in sas.primary_var[var]] for var in eff_var]):
+#             new_axiom = (axiom.get_under_prop(sas,prop,pre_existing_secondary_vars,eff_var))
+#             if new_axiom:
+#                 sas.axioms.add(new_axiom)
 #                 for eff_var,eff_val in axiom.achievement.items():
 #                     oraxiom = Axiom()
 #                     new_requirement = {sas.prop
@@ -132,8 +131,8 @@ def main(sas,args):
         end = time.time()
         print("Candidate Time: {}s".format(end-start))
     print("# of removed operators : {}".format(len(candidates)))
-    if len(candidates) > 0:
-        encode(sas,candidates)
+#     if len(candidates) > 0:
+    return(encode(sas,candidates))
 
 
 if __name__ == '__main__':
@@ -156,7 +155,7 @@ if __name__ == '__main__':
 
 
     try:
-        main(sas,args)
+        sas = main(sas,args)
         normalize(sas)
         with open(args.output,"w") as f:
             print(sas,file=f)
