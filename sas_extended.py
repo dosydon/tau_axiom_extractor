@@ -3,8 +3,7 @@ import argparse
 import itertools
 from collections import defaultdict
 from abc import ABC, abstractmethod
-from sas import Axiom
-from operator_extended import OperatorExtended
+from sas import Axiom, Operator
 
 class SASExtended(ABC):
 
@@ -62,7 +61,7 @@ class SASExtended(ABC):
             effect[var] = (fr,to)
 
         cost = int(lines[-1])
-        new_operator = OperatorExtended(name,cost)
+        new_operator = Operator(name,cost)
         new_operator.from_prevail(prevail,effect)
         self.operators.append(new_operator)
 
@@ -101,7 +100,7 @@ class SASExtended(ABC):
             effect[var] = (fr,to)
 
         cost = int(lines[-1])
-        new_operator = OperatorExtended(name,cost)
+        new_operator = Operator(name,cost)
         new_operator.from_prevail(prevail,effect)
         self.removed_operators.add(new_operator)
 
@@ -121,7 +120,7 @@ class SASExtended(ABC):
             effect[var] = (fr,to)
 
         cost = int(lines[-1])
-        new_operator = OperatorExtended(name,cost)
+        new_operator = Operator(name,cost)
         new_operator.from_prevail(prevail,effect)
         self.remained_operators.add(new_operator)
 

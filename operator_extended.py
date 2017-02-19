@@ -28,7 +28,7 @@ def encode_operator(original_op, primary2secondary, original_secondary_var, eff_
     <BLANKLINE>
     '''
 
-    op = OperatorExtended(original_op.name, original_op.cost)
+    op = Operator(original_op.name, original_op.cost)
 
     primary_req = {(var,value) for var,value in original_op.requirement.items() if not var in original_secondary_var}
     secondary_req = {(var,value) for var,value in original_op.requirement.items() if var in original_secondary_var}
@@ -48,8 +48,3 @@ def encode_operator(original_op, primary2secondary, original_secondary_var, eff_
 
     op.from_requirement(outer_req,achievement)
     return op
-
-class OperatorExtended(Operator):
-    def __init__(self,name,cost):
-        Operator.__init__(self,name,cost)
-
