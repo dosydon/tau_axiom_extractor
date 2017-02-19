@@ -59,7 +59,6 @@ class OperatorExtended(Operator):
         inner_req = {(var,value) for (var,value) in primary_req if var in eff_var}
         inner_ach = {(var,value) for (var,value) in self.achievement.items() if var in eff_var}
         prop = tuple(sorted(inner_req))
-        print(prop)
 
         outer_req = {var:value for (var,value) in primary_req if not var in eff_var}
         outer_req[sas.primary2secondary[prop]] = 1
