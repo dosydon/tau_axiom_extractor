@@ -93,21 +93,6 @@ def introduce_base_axioms(sas,eff_var,inner_goal,max_layer):
             goal_axiom.from_prevail({second:1},{goal_var:(0,1)})
             sas.axioms.add(goal_axiom)
 
-def main(sas,args):
-    candidate_gen_table = {
-            'bottom':bottom_up_candidates,'top':top_down_candidates}
-    candidate_gen = candidate_gen_table[args.candidate_gen]
-    start = time.time()
-    try:
-        candidates = candidate_gen(sas)
-    finally:
-        end = time.time()
-        print("Candidate Time: {}s".format(end-start))
-    print("# of removed operators : {}".format(len(candidates)))
-#     if len(candidates) > 0:
-    return(encode(sas,candidates))
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("sas_file")
@@ -126,9 +111,19 @@ if __name__ == '__main__':
         print("invalid input")
         raise e
 
-
     try:
-        sas = main(sas,args)
+        candidate_gen_table = {
+                'bottom':bottom_up_candidates,'top':top_down_candidates}
+        candidate_gen = candidate_gen_table[args.candidate_gen]
+        start = time.time()
+        try:
+            candidates = candidate_gen(sas)
+        finally:
+            end = time.time()
+            print("Candidate Time: {}s".format(end-start))
+        print("# of removed operators : {}".format(len(candidates)))
+        sas = encode(sas,candidates)
+
         normalize(sas)
         with open(args.output,"w") as f:
             print(sas,file=f)
