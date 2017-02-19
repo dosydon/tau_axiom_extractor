@@ -39,7 +39,7 @@ def encode(sas,candidates):
 
     introduce_base_axioms(encoded,eff_var,inner_goal,max_layer)
 
-    introduce_reachability_axioms(encoded,eff_var,set(),candidates)
+    introduce_reachability_axioms(encoded,eff_var,candidates)
 
     encoded.removed_operators = set(candidates)
     for op in operators:
@@ -49,7 +49,7 @@ def encode(sas,candidates):
         encoded.operators.append(encode_observable_operator(op, encoded.primary2secondary, set(), eff_var))
     return encoded
 
-def introduce_reachability_axioms(sas,eff_var,pre_existing_secondary_vars,candidates):
+def introduce_reachability_axioms(sas,eff_var,candidates):
     for prop in itertools.product(*[[(var,value) for value in sas.primary_var[var]] for var in sorted(eff_var)]):
         assignment = {var:value for (var,value) in prop}
         state = State(assignment)
