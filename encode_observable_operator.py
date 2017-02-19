@@ -1,5 +1,5 @@
 from sas import Operator
-def encode_operator(original_op, primary2secondary, original_secondary_var, eff_var):
+def encode_observable_operator(original_op, primary2secondary, original_secondary_var, eff_var):
     '''
     >>> op = Operator('op',0)
     >>> primary2secondary = {((0,1),):2}
@@ -15,7 +15,7 @@ def encode_operator(original_op, primary2secondary, original_secondary_var, eff_
     0
     end_operator
     <BLANKLINE>
-    >>> encode_operator(op, primary2secondary, original_secondary_var, eff_var)
+    >>> encode_observable_operator(op, primary2secondary, original_secondary_var, eff_var)
     begin_operator
     op
     2

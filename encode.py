@@ -5,7 +5,7 @@ class ConditionalException(Exception):
     pass
 from collections import defaultdict
 from state import State
-from operator_extended import encode_operator
+from encode_observable_operator import encode_observable_operator
 from preprocess import normalize
 from stratification import stratify
 from candidate import bottom_up_candidates,top_down_candidates
@@ -46,7 +46,7 @@ def encode(sas,candidates):
         remained_op = Operator(op.name,op.cost)
         remained_op.from_prevail(op.prevail.copy(),op.effect.copy())
         encoded.remained_operators.add(remained_op)
-        encoded.operators.append(encode_operator(op, encoded.primary2secondary, set(), eff_var))
+        encoded.operators.append(encode_observable_operator(op, encoded.primary2secondary, set(), eff_var))
     return encoded
 
 def introduce_reachability_axioms(sas,eff_var,pre_existing_secondary_vars,candidates):
