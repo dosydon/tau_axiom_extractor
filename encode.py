@@ -27,14 +27,13 @@ def encode(sas,tau_operators):
     secondary_var = defaultdict(dict)
     primary2secondary = {}
     initial_assignment = sas.initial_assignment.copy()
-    removed_goal = sas.goal.copy()
     goal = outer_goal
-    mutex_group = sas.mutex_group.copy()
+    removed_goal = sas.goal.copy()
     axiom_layer = sas.axiom_layer.copy()
     metric = sas.metric
-    operators = []
-    removed_operators = set()
+    mutex_group = sas.mutex_group.copy()
     axioms = set()
+    operators = []
     removed_operators = set(tau_operators)
     remained_operators = set()
     max_layer = max([layer for layer in sas.axiom_layer.values()]) + 1
@@ -44,8 +43,7 @@ def encode(sas,tau_operators):
 
     introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial_assignment, axiom_layer, axioms, eff_var,inner_goal,max_layer)
 
-    rechability_axioms = get_reachability_axioms(primary_var, axiom_layer, primary2secondary ,eff_var, tau_operators)
-    axioms.update(rechability_axioms)
+    introduce_reachability_axioms(primary_var, axiom_layer, primary2secondary ,eff_var, tau_operators, axioms)
 
     introduce_encoded_observable_operators(observable_operators, primary2secondary, eff_var, operators, remained_operators)
 
@@ -58,8 +56,7 @@ def introduce_encoded_observable_operators(observable_operators, primary2seconda
         remained_operators.add(remained_op)
         operators.append(encode_observable_operator(op, primary2secondary, set(), eff_var))
 
-def get_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_var,tau_operators):
-    axioms = set()
+def introduce_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_var,tau_operators, axioms):
     for prop in itertools.product(*[[(var,value) for value in primary_var[var]] for var in sorted(eff_var)]):
         assignment = {var:value for (var,value) in prop}
         state = State(assignment)
@@ -78,7 +75,6 @@ def get_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_var,ta
                     axiom = Axiom()
                     axiom.from_prevail(outer_req,{to:(0,1)})
                     axioms.add(axiom)
-    return axioms
 
 def introduce_new_goal_var(primary_var, secondary_var, axiom_layer, goal, initial_assignment, inner_goal, max_layer):
     if inner_goal:
