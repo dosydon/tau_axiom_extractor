@@ -174,13 +174,3 @@ class SASExtended(ABC):
         res += "end_removed_goal\n"
         return '' if len(self.removed_goal) <= 0 else res
 
-    def new_var_index(self):
-        return len(self.primary_var) + len(self.secondary_var)
-
-    def add_secondary(self,values,layer):
-        index = self.new_var_index()
-        self.axiom_layer[index] = layer
-        self.secondary_var[index] = values
-        return index
-
-
