@@ -7,12 +7,11 @@ import os
 import psutil
 import copy
 from collections import defaultdict
-from state import State
 from encode_observable_operator import encode_observable_operator
 from preprocess import normalize
-from candidate import bottom_up_candidates,top_down_candidates
+from candidate import opgraph_candidates, bottom_up_candidates,top_down_candidates
 from sas3_extended import SAS3Extended
-from sas import Operator, Axiom
+from sas import Operator, Axiom, State
 
 class ConditionalException(Exception):
     pass
@@ -122,7 +121,7 @@ if __name__ == '__main__':
 
     try:
         candidate_gen_table = {
-                'bottom':bottom_up_tau_operators,'top':top_down_tau_operators}
+                'opgraph': opgraph_candidates, 'bottom':bottom_up_tau_operators,'top':top_down_tau_operators}
         candidate_gen = candidate_gen_table[args.candidate_gen]
         start = time.time()
         try:

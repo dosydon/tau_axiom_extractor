@@ -2,6 +2,12 @@ import argparse
 import itertools
 from sas3_extended import SAS3Extended
 from collections import defaultdict
+from operator_digraph_lemon import OperatorDiGraph
+
+def opgraph_candidates(sas):
+    G = OperatorDiGraph(sas)
+    return G.axiom_candidates()
+
 
 def bottom_up_candidates(sas,k=1):
     candidates = {var for var in sas.primary_var.keys()}
