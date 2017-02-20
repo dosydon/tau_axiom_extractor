@@ -32,26 +32,31 @@ def encode(sas,tau_operators):
     mutex_group = sas.mutex_group.copy()
     axiom_layer = sas.axiom_layer.copy()
     metric = sas.metric
-    operators = [op for op in sas.operators if not op in tau_operators]
+    operators = []
+    removed_operators = set()
+    axioms = set()
+    removed_operators = set(tau_operators)
+    remained_operators = set()
     max_layer = max([layer for layer in sas.axiom_layer.values()]) + 1
-
-
-    encoded = SAS3Extended(primary_var=primary_var, initial_assignment = initial_assignment, axiom_layer = axiom_layer, removed_goal = removed_goal, goal=goal, metric = metric, mutex_group = mutex_group)
+    observable_operators = [op for op in sas.operators if not op in tau_operators]
 
     introduce_new_goal_var(primary_var,secondary_var, axiom_layer, goal, initial_assignment, inner_goal, max_layer)
 
-    introduce_base_axioms(encoded,eff_var,inner_goal,max_layer)
+    introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial_assignment, axiom_layer, axioms, eff_var,inner_goal,max_layer)
 
-    rechability_axioms = get_reachability_axioms(primary_var, axiom_layer, encoded.primary2secondary ,eff_var, tau_operators)
-    encoded.axioms.update(rechability_axioms)
+    rechability_axioms = get_reachability_axioms(primary_var, axiom_layer, primary2secondary ,eff_var, tau_operators)
+    axioms.update(rechability_axioms)
 
-    encoded.removed_operators = set(tau_operators)
-    for op in operators:
+    introduce_encoded_observable_operators(observable_operators, primary2secondary, eff_var, operators, remained_operators)
+
+    return SAS3Extended(primary_var=primary_var, secondary_var = secondary_var, initial_assignment = initial_assignment, axiom_layer = axiom_layer, removed_goal = removed_goal, goal=goal, metric = metric, mutex_group = mutex_group, axioms = axioms, operators = operators, removed_operators = removed_operators, remained_operators = remained_operators)
+
+def introduce_encoded_observable_operators(observable_operators, primary2secondary, eff_var, operators, remained_operators):
+    for op in observable_operators:
         remained_op = Operator(op.name,op.cost)
         remained_op.from_prevail(op.prevail.copy(),op.effect.copy())
-        encoded.remained_operators.add(remained_op)
-        encoded.operators.append(encode_observable_operator(op, encoded.primary2secondary, set(), eff_var))
-    return encoded
+        remained_operators.add(remained_op)
+        operators.append(encode_observable_operator(op, primary2secondary, set(), eff_var))
 
 def get_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_var,tau_operators):
     axioms = set()
@@ -85,21 +90,22 @@ def introduce_new_goal_var(primary_var, secondary_var, axiom_layer, goal, initia
         goal[goal_var] = 1
         initial_assignment[goal_var] = 0
 
-def introduce_base_axioms(sas,eff_var,inner_goal,max_layer):
-    for prop in itertools.product(*[[(var,value) for value in sas.primary_var[var]] for var in sorted(eff_var)]):
-        second = sas.add_secondary({0:"NegatedAtom" + str(prop),1:"Atom" + str(prop)},max_layer)
-        sas.primary2secondary[prop] = second
-        sas.initial_assignment[second] = 0
+def introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial_assignment, axiom_layer, axioms, eff_var,inner_goal,max_layer):
+    for prop in itertools.product(*[[(var,value) for value in primary_var[var]] for var in sorted(eff_var)]):
+        second = len(primary_var) + len(secondary_var)
+        secondary_var[second] = {0:"NegatedAtom" + str(prop),1:"Atom" + str(prop)}
+        axiom_layer[second] = max_layer
+        primary2secondary[prop] = second
+        initial_assignment[second] = 0
 
         axiom = Axiom()
         axiom.from_prevail({x:y for (x,y) in prop},{second:(0,1)})
-        sas.axioms.add(axiom)
-
+        axioms.add(axiom)
 
         if inner_goal and set(inner_goal) <= set(prop):
             goal_axiom = Axiom()
             goal_axiom.from_prevail({second:1},{goal_var:(0,1)})
-            sas.axioms.add(goal_axiom)
+            axioms.add(goal_axiom)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
