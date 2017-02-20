@@ -1,2 +1,13 @@
 build
 **/*.pyc
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+opgraph/CMakeFiles/
+opgraph/Makefile
+opgraph/_opgraph.so
+opgraph/cmake_install.cmake
+opgraph/operetar.txt
+opgraph/opgraph.py
+opgraph/opgraphPYTHON_wrap.cxx
