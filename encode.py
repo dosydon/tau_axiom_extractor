@@ -10,7 +10,6 @@ from collections import defaultdict
 from state import State
 from encode_observable_operator import encode_observable_operator
 from preprocess import normalize
-from stratification import stratify
 from candidate import bottom_up_candidates,top_down_candidates
 from sas3_extended import SAS3Extended
 from sas import Operator, Axiom
