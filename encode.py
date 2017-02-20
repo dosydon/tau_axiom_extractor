@@ -24,6 +24,7 @@ def encode(sas,tau_operators):
     outer_goal = {var:value for var,value in sas.goal.items() if not var in eff_var}
 
     primary_var = copy.deepcopy(sas.primary_var)
+    secondary_var = defaultdict(dict)
     primary2secondary = {}
     initial_assignment = sas.initial_assignment.copy()
     removed_goal = sas.goal.copy()
@@ -32,12 +33,13 @@ def encode(sas,tau_operators):
     axiom_layer = sas.axiom_layer.copy()
     metric = sas.metric
     operators = [op for op in sas.operators if not op in tau_operators]
+    max_layer = max([layer for layer in sas.axiom_layer.values()]) + 1
+
 
     encoded = SAS3Extended(primary_var=primary_var, initial_assignment = initial_assignment, axiom_layer = axiom_layer, removed_goal = removed_goal, goal=goal, metric = metric, mutex_group = mutex_group)
 
-    max_layer = max([layer for layer in sas.axiom_layer.values()]) + 1
+    introduce_new_goal_var(primary_var,secondary_var, axiom_layer, goal, initial_assignment, inner_goal, max_layer)
 
-    introduce_new_goal_vars(sas, inner_goal)
     introduce_base_axioms(encoded,eff_var,inner_goal,max_layer)
 
     rechability_axioms = get_reachability_axioms(primary_var, axiom_layer, encoded.primary2secondary ,eff_var, tau_operators)
@@ -73,12 +75,15 @@ def get_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_var,ta
                     axioms.add(axiom)
     return axioms
 
-def introduce_new_goal_vars(sas, inner_goal):
+def introduce_new_goal_var(primary_var, secondary_var, axiom_layer, goal, initial_assignment, inner_goal, max_layer):
     if inner_goal:
+        goal_var = len(primary_var)
         values = {0:str(tuple(inner_goal))+"=False",1:str(tuple(inner_goal))+"=True"}
-        goal_var = sas.add_secondary(values,max_layer)
-        sas.goal[goal_var] = 1
-        sas.initial_assignment[goal_var] = 0
+
+        secondary_var[goal_var] = values
+        axiom_layer[goal_var] = max_layer
+        goal[goal_var] = 1
+        initial_assignment[goal_var] = 0
 
 def introduce_base_axioms(sas,eff_var,inner_goal,max_layer):
     for prop in itertools.product(*[[(var,value) for value in sas.primary_var[var]] for var in sorted(eff_var)]):
