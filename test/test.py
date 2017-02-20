@@ -1,7 +1,7 @@
 import unittest
 import os
 from sas3_extended import SAS3Extended
-from candidate import opgraph_candidates,bottom_up_candidates,top_down_candidates
+from candidate import opgraph_candidates,top_down_candidates
 from encode import encode
 
 class TestSas(unittest.TestCase):

@@ -9,7 +9,7 @@ import copy
 from collections import defaultdict
 from encode_observable_operator import encode_observable_operator
 from preprocess import normalize
-from candidate import opgraph_candidates, bottom_up_candidates,top_down_candidates
+from candidate import opgraph_candidates, top_down_candidates
 from sas3_extended import SAS3Extended
 from sas import Operator, Axiom, State
 
