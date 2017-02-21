@@ -2,11 +2,6 @@ import argparse
 import itertools
 from sas3_extended import SAS3Extended
 from collections import defaultdict
-from operator_digraph_lemon import OperatorDiGraph
-
-def opgraph_candidates(sas):
-    G = OperatorDiGraph(sas)
-    return G.axiom_candidates()
 
 def from_var(sas,candidate_vars):
     res = []
@@ -17,7 +12,7 @@ def from_var(sas,candidate_vars):
             res.append(op)
     return res
 
-def top_down_candidates(sas):
+def extract_tau_operators_top(sas):
     candidate_vars = set()
     for op in sas.operators:
         pre_var = frozenset({var for var,to in op.requirement.items()})

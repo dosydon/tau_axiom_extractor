@@ -9,7 +9,8 @@ import copy
 from collections import defaultdict
 from encode_observable_operator import encode_observable_operator
 from preprocess import normalize
-from candidate import opgraph_candidates, top_down_candidates
+from extract_tau_operators_opgraph import extract_tau_operators_opgraph
+from extract_tau_operators_top import extract_tau_operators_top
 from sas3_extended import SAS3Extended
 from sas import Operator, Axiom, State
 
@@ -121,7 +122,7 @@ if __name__ == '__main__':
 
     try:
         candidate_gen_table = {
-                'opgraph': opgraph_candidates, 'top':top_down_candidates
+                'opgraph': extract_tau_operators_opgraph, 'top':extract_tau_operators_top
                 }
         candidate_gen = candidate_gen_table[args.candidate_gen]
         start = time.time()
