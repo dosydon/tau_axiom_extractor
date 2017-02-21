@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 from collections import defaultdict
 from sas3_extended import SAS3Extended
@@ -57,8 +57,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    sas = SAS()
-    sas.read_file(args.sas_file)
+    sas = SAS3Extended.from_file(args.sas_file)
     normalize(sas)
     with open(args.output,"w") as f:
-        sas.write(f)
+        print(str(sas), file=f)

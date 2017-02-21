@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 import argparse
 import itertools
@@ -121,7 +121,8 @@ if __name__ == '__main__':
 
     try:
         candidate_gen_table = {
-                'opgraph': opgraph_candidates, 'bottom':bottom_up_tau_operators,'top':top_down_tau_operators}
+                'opgraph': opgraph_candidates, 'top':top_down_candidates
+                }
         candidate_gen = candidate_gen_table[args.candidate_gen]
         start = time.time()
         try:
