@@ -47,9 +47,9 @@ def encode(sas,tau_operators):
     introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial_assignment, axiom_layer, axioms, eff_var,inner_goal,max_layer)
     copy_secondary_vars(primary_var, secondary_var, initial_assignment, prop2under, axiom_layer, axioms, goal, eff_var,pre_existing_secondary_vars, max_layer)
 
-    introduce_reachability_axioms(primary_var, axiom_layer, primary2secondary ,eff_var, tau_operators, axioms)
+    introduce_reachability_axioms(primary_var, axiom_layer, primary2secondary ,eff_var, tau_operators, axioms, pre_existing_secondary_vars, prop2under)
 
-    introduce_encoded_observable_operators(observable_operators, primary2secondary, eff_var, operators, remained_operators)
+    introduce_encoded_observable_operators(observable_operators, primary2secondary, prop2under, pre_existing_secondary_vars, eff_var, operators, remained_operators)
 
     copy_axioms(primary_var, removed_operators, prop2under, axioms, removed_axioms, eff_var,pre_existing_secondary_vars)
 
@@ -61,7 +61,7 @@ def copy_secondary_vars(primary_var, secondary_var, initial_assignment, prop2und
             values = secondary_var[index]
             new_index = len(primary_var) + len(secondary_var)
             secondary_var[new_index] = {0:values[0] + " under " + str(prop),1:values[1] + " under " + str(prop)}
-            axiom_layer[new_index] = max_layer
+            axiom_layer[new_index] = axiom_layer[index]
             prop2under[prop][index] = new_index
 
             initial_assignment[new_index] = initial_assignment[index]
@@ -74,13 +74,13 @@ def copy_secondary_vars(primary_var, secondary_var, initial_assignment, prop2und
                 oraxiom.from_requirement(new_requirement,{index:(2 -initial_assignment[index])//2})
                 axioms.add(oraxiom)
 
-def introduce_encoded_observable_operators(observable_operators, primary2secondary, eff_var, operators, remained_operators):
+def introduce_encoded_observable_operators(observable_operators, primary2secondary, prop2under, pre_existing_secondary_vars, eff_var, operators, remained_operators):
     for op in observable_operators:
         remained_op = Operator.from_prevail(op.name,op.cost,op.prevail.copy(),op.effect.copy())
         remained_operators.add(remained_op)
-        operators.append(encode_observable_operator(op, primary2secondary, set(), eff_var))
+        operators.append(encode_observable_operator(op, primary2secondary, prop2under, pre_existing_secondary_vars, eff_var))
 
-def introduce_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_var,tau_operators, axioms):
+def introduce_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_var,tau_operators, axioms, pre_existing_secondary_vars, prop2under):
     for prop in itertools.product(*[[(var,value) for value in primary_var[var]] for var in sorted(eff_var)]):
         assignment = {var:value for (var,value) in prop}
         state = State(assignment)
@@ -97,7 +97,7 @@ def introduce_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_
                     outer_req = {var:value for (var,value) in op.requirement.items() if not var in eff_var}
                     outer_req[fr] = 1
                     axiom = Axiom.from_prevail('name',outer_req,{to:(0,1)})
-                    axioms.add(axiom)
+                    axioms.add(get_under_prop(axiom,prop,pre_existing_secondary_vars,eff_var,prop2under))
 
 def introduce_new_goal_var(primary_var, secondary_var, axiom_layer, goal, initial_assignment, inner_goal, max_layer):
     if inner_goal:

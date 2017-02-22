@@ -4,6 +4,7 @@ from sas3_extended import SAS3Extended
 from encode import encode
 from extract_tau_operators_opgraph import extract_tau_operators_opgraph
 from extract_tau_operators_top import extract_tau_operators_top
+from preprocess import normalize
 
 class TestSas(unittest.TestCase):
     def setUp(self):
@@ -55,8 +56,7 @@ class TestSas(unittest.TestCase):
         candidates = extract_tau_operators_top(original_sas)
         if len(candidates) > 0:
             original_sas = encode(original_sas,candidates)
-        with open('output.sas','w') as f:
-            print(str(original_sas),file=f)
+        normalize(original_sas)
         self.assertEqual(str(original_sas),str(encoded_sas))
 
 if __name__ == '__main__':
