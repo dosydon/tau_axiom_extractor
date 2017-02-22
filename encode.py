@@ -24,6 +24,7 @@ def encode(sas,tau_operators):
 
     primary_var = copy.deepcopy(sas.primary_var)
     secondary_var = defaultdict(dict)
+    prop2under = defaultdict(dict)
     primary2secondary = {}
     initial_assignment = sas.initial_assignment.copy()
     goal = outer_goal
@@ -35,18 +36,37 @@ def encode(sas,tau_operators):
     operators = []
     removed_operators = set(tau_operators)
     remained_operators = set()
+
+    pre_existing_secondary_vars = sas.secondary_var.keys()
     max_layer = max([layer for layer in sas.axiom_layer.values()]) + 1
     observable_operators = [op for op in sas.operators if not op in tau_operators]
 
     introduce_new_goal_var(primary_var,secondary_var, axiom_layer, goal, initial_assignment, inner_goal, max_layer)
 
     introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial_assignment, axiom_layer, axioms, eff_var,inner_goal,max_layer)
+    copy_secondary_vars(secondary_var, initial_assignment, prop2under, axiom_layer, axioms, goal, eff_var,pre_existing_secondary_vars)
 
     introduce_reachability_axioms(primary_var, axiom_layer, primary2secondary ,eff_var, tau_operators, axioms)
 
     introduce_encoded_observable_operators(observable_operators, primary2secondary, eff_var, operators, remained_operators)
 
     return SAS3Extended(primary_var=primary_var, secondary_var = secondary_var, initial_assignment = initial_assignment, axiom_layer = axiom_layer, removed_goal = removed_goal, goal=goal, metric = metric, mutex_group = mutex_group, axioms = axioms, operators = operators, removed_operators = removed_operators, remained_operators = remained_operators)
+
+def copy_secondary_vars(secondary_var, initial_assignment, prop2under, axiom_layer, axioms, goal, eff_var,pre_existing_secondary_vars):
+    for index in pre_existing_secondary_vars:
+        for prop in itertools.product(*[[(var,value) for value in primary_var[var]] for var in eff_var]):
+            values = secondary_var[index]
+            new_index = add_secondary({0:values[0] + " under " + str(prop),1:values[1] + " under " + str(prop)},axiom_layer[index])
+            prop2under[prop][index] = new_index
+            initial_assignment[new_index] = initial_assignment[index]
+            if index in goal:
+                oraxiom = Axiom()
+                new_requirement = {prop2under[prop][index]:(2 - initial_assignment[prop2under[prop][index]]) // 2}
+                for var,value in prop:
+                    new_requirement[var] = value
+                new_requirement[index] = initial_assignment[index]
+                oraxiom.from_requirement(new_requirement,{index:(2 -initial_assignment[index])//2})
+                axioms.add(oraxiom)
 
 def introduce_encoded_observable_operators(observable_operators, primary2secondary, eff_var, operators, remained_operators):
     for op in observable_operators:
