@@ -23,7 +23,7 @@ def encode(sas,tau_operators):
     outer_goal = {var:value for var,value in sas.goal.items() if not var in eff_var}
 
     primary_var = copy.deepcopy(sas.primary_var)
-    secondary_var = defaultdict(dict)
+    secondary_var = copy.deepcopy(sas.secondary_var)
     prop2under = defaultdict(dict)
     primary2secondary = {}
     initial_assignment = sas.initial_assignment.copy()
@@ -36,6 +36,7 @@ def encode(sas,tau_operators):
     operators = []
     removed_operators = set(tau_operators)
     remained_operators = set()
+    removed_axioms = sas.axioms.copy()
 
     pre_existing_secondary_vars = sas.secondary_var.keys()
     max_layer = max([layer for layer in sas.axiom_layer.values()]) + 1
@@ -44,20 +45,25 @@ def encode(sas,tau_operators):
     introduce_new_goal_var(primary_var,secondary_var, axiom_layer, goal, initial_assignment, inner_goal, max_layer)
 
     introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial_assignment, axiom_layer, axioms, eff_var,inner_goal,max_layer)
-    copy_secondary_vars(secondary_var, initial_assignment, prop2under, axiom_layer, axioms, goal, eff_var,pre_existing_secondary_vars)
+    copy_secondary_vars(primary_var, secondary_var, initial_assignment, prop2under, axiom_layer, axioms, goal, eff_var,pre_existing_secondary_vars, max_layer)
 
     introduce_reachability_axioms(primary_var, axiom_layer, primary2secondary ,eff_var, tau_operators, axioms)
 
     introduce_encoded_observable_operators(observable_operators, primary2secondary, eff_var, operators, remained_operators)
 
-    return SAS3Extended(primary_var=primary_var, secondary_var = secondary_var, initial_assignment = initial_assignment, axiom_layer = axiom_layer, removed_goal = removed_goal, goal=goal, metric = metric, mutex_group = mutex_group, axioms = axioms, operators = operators, removed_operators = removed_operators, remained_operators = remained_operators)
+    copy_axioms(primary_var, removed_operators, prop2under, axioms, removed_axioms, eff_var,pre_existing_secondary_vars)
 
-def copy_secondary_vars(secondary_var, initial_assignment, prop2under, axiom_layer, axioms, goal, eff_var,pre_existing_secondary_vars):
+    return SAS3Extended(primary_var=primary_var, secondary_var = secondary_var, initial_assignment = initial_assignment, axiom_layer = axiom_layer, removed_goal = removed_goal, goal=goal, metric = metric, mutex_group = mutex_group, axioms = axioms, operators = operators, removed_operators = removed_operators, remained_operators = remained_operators, removed_axioms = removed_axioms)
+
+def copy_secondary_vars(primary_var, secondary_var, initial_assignment, prop2under, axiom_layer, axioms, goal, eff_var,pre_existing_secondary_vars,max_layer):
     for index in pre_existing_secondary_vars:
         for prop in itertools.product(*[[(var,value) for value in primary_var[var]] for var in eff_var]):
             values = secondary_var[index]
-            new_index = add_secondary({0:values[0] + " under " + str(prop),1:values[1] + " under " + str(prop)},axiom_layer[index])
+            new_index = len(primary_var) + len(secondary_var)
+            secondary_var[new_index] = {0:values[0] + " under " + str(prop),1:values[1] + " under " + str(prop)}
+            axiom_layer[new_index] = max_layer
             prop2under[prop][index] = new_index
+
             initial_assignment[new_index] = initial_assignment[index]
             if index in goal:
                 oraxiom = Axiom()
@@ -70,8 +76,7 @@ def copy_secondary_vars(secondary_var, initial_assignment, prop2under, axiom_lay
 
 def introduce_encoded_observable_operators(observable_operators, primary2secondary, eff_var, operators, remained_operators):
     for op in observable_operators:
-        remained_op = Operator(op.name,op.cost)
-        remained_op.from_prevail(op.prevail.copy(),op.effect.copy())
+        remained_op = Operator.from_prevail(op.name,op.cost,op.prevail.copy(),op.effect.copy())
         remained_operators.add(remained_op)
         operators.append(encode_observable_operator(op, primary2secondary, set(), eff_var))
 
@@ -91,8 +96,7 @@ def introduce_reachability_axioms(primary_var,axiom_layer,primary2secondary,eff_
 
                     outer_req = {var:value for (var,value) in op.requirement.items() if not var in eff_var}
                     outer_req[fr] = 1
-                    axiom = Axiom()
-                    axiom.from_prevail(outer_req,{to:(0,1)})
+                    axiom = Axiom.from_prevail('name',outer_req,{to:(0,1)})
                     axioms.add(axiom)
 
 def introduce_new_goal_var(primary_var, secondary_var, axiom_layer, goal, initial_assignment, inner_goal, max_layer):
@@ -113,14 +117,45 @@ def introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial
         primary2secondary[prop] = second
         initial_assignment[second] = 0
 
-        axiom = Axiom()
-        axiom.from_prevail({x:y for (x,y) in prop},{second:(0,1)})
+        axiom = Axiom.from_prevail('name',{x:y for (x,y) in prop},{second:(0,1)})
         axioms.add(axiom)
 
         if inner_goal and set(inner_goal) <= set(prop):
             goal_axiom = Axiom()
             goal_axiom.from_prevail({second:1},{goal_var:(0,1)})
             axioms.add(goal_axiom)
+
+def copy_axioms(primary_var, removed_operators, prop2under, axioms, removed_axioms, eff_var,pre_existing_secondary_vars):
+    for axiom in removed_axioms:
+        for prop in itertools.product(*[[(var,value) for value in primary_var[var]] for var in eff_var]):
+            new_axiom = (get_under_prop(axiom,prop,pre_existing_secondary_vars,eff_var, prop2under))
+            if new_axiom:
+                axioms.add(new_axiom)
+
+def get_under_prop(axiom,prop,original_second_var,eff_var,prop2under):
+    if not is_applicable_under_prop(axiom, prop):
+        return None
+
+    new_requirement ={}
+    dic = {var:value for var,value in prop}
+    for var,value in axiom.requirement.items():
+        if var in original_second_var:
+            new_requirement[prop2under[prop][var]] = value
+        elif var in eff_var:
+            pass
+        else:
+            new_requirement[var] = value
+    for eff_var,eff_val in axiom.achievement.items():
+        if eff_var in original_second_var:
+            return Axiom.from_requirement('axiom',new_requirement,{prop2under[prop][eff_var]:eff_val})
+        else:
+            return Axiom.from_requirement('axiom',new_requirement,{eff_var:eff_val})
+
+def is_applicable_under_prop(axiom,prop):
+    for var,value in prop:
+        if var in axiom.requirement and not axiom.requirement[var] == value:
+            return False
+    return True
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

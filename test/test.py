@@ -47,6 +47,18 @@ class TestSas(unittest.TestCase):
             original_sas = encode(original_sas,candidates)
         self.assertEqual(str(original_sas),str(encoded_sas))
 
+    def test_sokoban01_extracted_top_down(self):
+        file_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+        original_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/sokoban01_essential.sas'))
+        encoded_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/sokoban01_extracted.sas'))
+
+        candidates = extract_tau_operators_top(original_sas)
+        if len(candidates) > 0:
+            original_sas = encode(original_sas,candidates)
+        with open('output.sas','w') as f:
+            print(str(original_sas),file=f)
+        self.assertEqual(str(original_sas),str(encoded_sas))
+
 if __name__ == '__main__':
     unittest.main()
 

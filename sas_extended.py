@@ -61,8 +61,7 @@ class SASExtended(ABC):
             effect[var] = (fr,to)
 
         cost = int(lines[-1])
-        new_operator = Operator(name,cost)
-        new_operator.from_prevail(prevail,effect)
+        new_operator = Operator.from_prevail(name,cost,prevail,effect)
         self.operators.append(new_operator)
 
     def parse_removed_rule(self,lines):
@@ -80,8 +79,7 @@ class SASExtended(ABC):
                 return 
             effect[var] = (fr,to)
 
-        axiom = Axiom()
-        axiom.from_prevail(prevail,effect)
+        axiom = Axiom.from_prevail('axiom',prevail,effect)
         self.removed_axioms.add(axiom)
 
     def parse_removed_operator(self,lines):
@@ -100,8 +98,7 @@ class SASExtended(ABC):
             effect[var] = (fr,to)
 
         cost = int(lines[-1])
-        new_operator = Operator(name,cost)
-        new_operator.from_prevail(prevail,effect)
+        new_operator = Operator.from_prevail(name,cost,prevail,effect)
         self.removed_operators.add(new_operator)
 
     def parse_remained_operator(self,lines):
@@ -120,8 +117,7 @@ class SASExtended(ABC):
             effect[var] = (fr,to)
 
         cost = int(lines[-1])
-        new_operator = Operator(name,cost)
-        new_operator.from_prevail(prevail,effect)
+        new_operator = Operator.from_prevail(name,cost,prevail,effect)
         self.remained_operators.add(new_operator)
 
     def removed_operator2str(self):
