@@ -220,7 +220,7 @@ if __name__ == '__main__':
         print("# of removed operators : {}".format(len(tau_operators)))
         sas = encode(sas, tau_operators)
 
-#         normalize(sas)
+        normalize(sas)
         with open(args.output, "w") as f:
             print(sas, file=f)
     except Exception as e:

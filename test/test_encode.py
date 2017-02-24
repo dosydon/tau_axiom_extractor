@@ -56,8 +56,8 @@ class TestSas(unittest.TestCase):
         candidates = extract_tau_operators_top(original_sas)
         if len(candidates) > 0:
             encoded_sas = encode(original_sas,candidates)
-        normalize(original_sas)
-        self.assertEqual(str(encoded_sas),str(expected_sas))
+        normalize(encoded_sas)
+        self.assertMultiLineEqual(str(encoded_sas),str(expected_sas))
 
 if __name__ == '__main__':
     unittest.main()
