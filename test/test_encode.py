@@ -21,22 +21,22 @@ class TestSas(unittest.TestCase):
     def test_miconic_extracted_top_down(self):
         file_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
         original_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/miconic.sas'))
-        encoded_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/miconic_extracted.sas'))
+        expected_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/miconic_extracted.sas'))
 
         candidates = extract_tau_operators_top(original_sas)
         if len(candidates) > 0:
-            original_sas = encode(original_sas,candidates)
-        self.assertEqual(str(original_sas),str(encoded_sas))
+            encoded_sas = encode(original_sas,candidates)
+        self.assertEqual(str(encoded_sas),str(expected_sas))
 
     def test_gripper01_extracted_top_down(self):
         file_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
         original_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/gripper01.sas'))
-        encoded_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/gripper01_extracted.sas'))
+        expected_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/gripper01_extracted.sas'))
 
         candidates = extract_tau_operators_top(original_sas)
         if len(candidates) > 0:
-            original_sas = encode(original_sas,candidates)
-        self.assertEqual(str(original_sas),str(encoded_sas))
+            encoded_sas = encode(original_sas,candidates)
+        self.assertEqual(str(encoded_sas),str(expected_sas))
 
     def test_gripper01_extracted_opgraph(self):
         file_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
@@ -51,13 +51,13 @@ class TestSas(unittest.TestCase):
     def test_sokoban01_extracted_top_down(self):
         file_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
         original_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/sokoban01_essential.sas'))
-        encoded_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/sokoban01_extracted.sas'))
+        expected_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/sokoban01_extracted.sas'))
 
         candidates = extract_tau_operators_top(original_sas)
         if len(candidates) > 0:
-            original_sas = encode(original_sas,candidates)
+            encoded_sas = encode(original_sas,candidates)
         normalize(original_sas)
-        self.assertEqual(str(original_sas),str(encoded_sas))
+        self.assertEqual(str(encoded_sas),str(expected_sas))
 
 if __name__ == '__main__':
     unittest.main()
