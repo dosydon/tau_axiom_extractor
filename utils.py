@@ -1,4 +1,4 @@
-def plan_from_file(sas,file_name):
+def plan_from_file(sas, file_name):
     res = []
     name2op = {}
     for op in sas.remained_operators:
