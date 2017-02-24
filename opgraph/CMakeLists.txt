@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 # set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-FIND_PACKAGE(PythonLibs 3.5)
+FIND_PACKAGE(PythonLibs 3.4)
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
 include(GenerateExportHeader)
