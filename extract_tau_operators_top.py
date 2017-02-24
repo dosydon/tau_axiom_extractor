@@ -3,26 +3,28 @@ import itertools
 from sas3_extended import SAS3Extended
 from collections import defaultdict
 
-def from_var(sas,candidate_vars):
+
+def from_var(sas, candidate_vars):
     res = []
     for op in sas.operators:
-        eff_var = {var for var,to in op.achievement.items()}
-        pre_var = {var for var,to in op.requirement.items()}
+        eff_var = {var for var, to in op.achievement.items()}
+        pre_var = {var for var, to in op.requirement.items()}
         if eff_var <= candidate_vars:
             res.append(op)
     return res
 
+
 def extract_tau_operators_top(sas):
     candidate_vars = set()
     for op in sas.operators:
-        pre_var = frozenset({var for var,to in op.requirement.items()})
+        pre_var = frozenset({var for var, to in op.requirement.items()})
         if len(pre_var) > 0:
             candidate_vars.add(pre_var)
 
     for op in sas.operators:
         new_vars = set()
-        eff_var = frozenset({var for var,to in op.achievement.items()})
-        pre_var = frozenset({var for var,to in op.requirement.items()})
+        eff_var = frozenset({var for var, to in op.achievement.items()})
+        pre_var = frozenset({var for var, to in op.requirement.items()})
         for item in candidate_vars:
             if pre_var >= item:
                 new_vars.add(item)
@@ -42,7 +44,7 @@ def extract_tau_operators_top(sas):
             return candidate_vars
 
     if len(candidate_vars) > 0:
-        return from_var(sas,max(candidate_vars,key=len))
+        return from_var(sas, max(candidate_vars, key=len))
     else:
         return set()
 
@@ -50,12 +52,10 @@ def extract_tau_operators_top(sas):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("sas_file")
-    parser.add_argument('--output',default='output.sas')
+    parser.add_argument('--output', default='output.sas')
     args = parser.parse_args()
 
     sas = SAS()
     sas.read_file(args.sas_file)
     candidate_vars = get_candidates_var(sas)
     print(candidate_vars)
-
-
