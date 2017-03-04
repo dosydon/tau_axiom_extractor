@@ -42,29 +42,6 @@ class SASExtended(ABC):
             group.append((nums))
         self.mutex_group.append(group)
 
-    def parse_operator(self, lines):
-        prevail = {}
-        effect = {}
-
-        name = lines[0]
-        num_prevail = int(lines[1])
-        num_effect = int(lines[num_prevail + 2])
-        for line in lines[2:2 + num_prevail]:
-            (var, value) = [int(num) for num in line.split(' ')]
-            prevail[var] = value
-        for line in lines[num_prevail + 3:num_prevail + num_effect + 3]:
-            num_conditions = int(line[0])
-            rest = [int(num) for num in line.split(' ')][1:]
-            for i in range(0, num_conditions):
-                var, val = rest[:2]
-                rest = rest[2:]
-            (var, fr, to) = rest
-            effect[var] = (fr, to)
-
-        cost = int(lines[-1])
-        new_operator = Operator.from_prevail(name, cost, prevail, effect)
-        self.operators.append(new_operator)
-
     def parse_removed_rule(self, lines):
         prevail = {}
         effect = {}
