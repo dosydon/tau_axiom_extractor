@@ -23,16 +23,7 @@ def flip_operators(vars_to_flip, sas):
     original_operators = sas.operators.copy()
     sas.operators = []
     for op in original_operators:
-        pre = op.prevail
-        eff = op.effect
-        for var in pre:
-            if var in vars_to_flip:
-                pre[var] = get_flipped(pre[var])
-        for var in eff:
-            if var in vars_to_flip:
-                fr, to = eff[var]
-                eff[var] = (to, fr)
-        sas.operators.append(Operator.from_prevail(op.name, op.cost, pre, eff))
+        sas.operators.append(op.get_flipped(vars_to_flip))
 
 def flip_axioms(vars_to_flip, sas):
     original_axioms = sas.axioms.copy()
