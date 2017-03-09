@@ -14,5 +14,13 @@ class TestSas(unittest.TestCase):
         normalize(tested_sas)
         self.assertEqual(str(tested_sas),str(expected_sas))
 
+    def test_preprocess_visitall(self):
+        file_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+        tested_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/visitall.sas'))
+        expected_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/visitall.sas'))
+
+        normalize(tested_sas)
+        self.assertEqual(str(tested_sas),str(expected_sas))
+
 if __name__ == '__main__':
     unittest.main()

@@ -87,7 +87,7 @@ def copy_secondary_vars(primary_var, secondary_var, initial_assignment, prop2und
                     new_requirement[var] = value
                 new_requirement[index] = initial_assignment[index]
                 oraxiom.from_requirement(
-                    new_requirement, {index: (2 - initial_assignment[index]) // 2})
+                    "axiom",new_requirement, {index: (2 - initial_assignment[index]) // 2})
                 axioms.add(oraxiom)
 
 
