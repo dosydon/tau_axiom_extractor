@@ -59,16 +59,16 @@ class TestSas(unittest.TestCase):
         normalize(encoded_sas)
         self.assertMultiLineEqual(str(encoded_sas),str(expected_sas))
 
-    def test_visitall_extract(self):
-        file_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
-        original_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/visitall.sas'))
-        expected_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/visitall.sas'))
-
-        candidates = extract_tau_operators_top(original_sas)
-        if len(candidates) > 0:
-            encoded_sas = encode(original_sas,candidates)
-        normalize(encoded_sas)
-        self.assertMultiLineEqual(str(encoded_sas),str(expected_sas))
+#    def test_visitall_extract(self):
+#        file_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+#        original_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/visitall.sas'))
+#        expected_sas = SAS3Extended.from_file(os.path.join(file_dir, 'test_cases/visitall.sas'))
+#
+#        candidates = extract_tau_operators_top(original_sas)
+#        if len(candidates) > 0:
+#            encoded_sas = encode(original_sas,candidates)
+#        normalize(encoded_sas)
+#        self.assertMultiLineEqual(str(encoded_sas),str(expected_sas))
 
 if __name__ == '__main__':
     unittest.main()

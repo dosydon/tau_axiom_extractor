@@ -80,13 +80,12 @@ def copy_secondary_vars(primary_var, secondary_var, initial_assignment, prop2und
 
             initial_assignment[new_index] = initial_assignment[index]
             if index in goal:
-                oraxiom = Axiom()
                 new_requirement = {prop2under[prop][index]: (
                     2 - initial_assignment[prop2under[prop][index]]) // 2}
                 for var, value in prop:
                     new_requirement[var] = value
                 new_requirement[index] = initial_assignment[index]
-                oraxiom.from_requirement(
+                oraxiom = Axiom.from_requirement(
                     "axiom",new_requirement, {index: (2 - initial_assignment[index]) // 2})
                 axioms.add(oraxiom)
 
@@ -136,6 +135,13 @@ def introduce_new_goal_var(primary_var, secondary_var, axiom_layer, goal, initia
 
 
 def introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial_assignment, axiom_layer, axioms, eff_var, inner_goal, max_layer):
+    if inner_goal:
+        values = {0:str(tuple(inner_goal))+"=False",1:str(tuple(inner_goal))+"=True"}
+        goal_var = len(primary_var) + len(secondary_var)
+        secondary_var[secondary_var] = values
+        sas.goal[goal_var] = 1
+        sas.initial_assignment[goal_var] = 0
+
     for prop in itertools.product(*[[(var, value) for value in primary_var[var]] for var in sorted(eff_var)]):
         second = len(primary_var) + len(secondary_var)
         secondary_var[second] = {0: "NegatedAtom" +
