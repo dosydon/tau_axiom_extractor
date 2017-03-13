@@ -48,11 +48,8 @@ def encode(sas, tau_operators):
     observable_operators = [
         op for op in sas.operators if op not in tau_operators]
 
-    introduce_new_goal_var(primary_var, secondary_var, axiom_layer,
-                           goal, initial_assignment, inner_goal, max_layer)
-
     introduce_base_axioms(primary_var, secondary_var, primary2secondary,
-                          initial_assignment, axiom_layer, axioms, eff_var, inner_goal, max_layer)
+                          initial_assignment, axiom_layer, axioms, eff_var, inner_goal, max_layer, goal)
     copy_secondary_vars(primary_var, secondary_var, initial_assignment, prop2under,
                         axiom_layer, axioms, goal, eff_var, pre_existing_secondary_vars, max_layer)
 
@@ -77,8 +74,8 @@ def copy_secondary_vars(primary_var, secondary_var, initial_assignment, prop2und
                 0: values[0] + " under " + str(prop), 1: values[1] + " under " + str(prop)}
             axiom_layer[new_index] = axiom_layer[index]
             prop2under[prop][index] = new_index
-
             initial_assignment[new_index] = initial_assignment[index]
+
             if index in goal:
                 new_requirement = {prop2under[prop][index]: (
                     2 - initial_assignment[prop2under[prop][index]]) // 2}
@@ -122,9 +119,9 @@ def introduce_reachability_axioms(primary_var, axiom_layer, primary2secondary, e
                         axiom, prop, pre_existing_secondary_vars, eff_var, prop2under))
 
 
-def introduce_new_goal_var(primary_var, secondary_var, axiom_layer, goal, initial_assignment, inner_goal, max_layer):
+def introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial_assignment, axiom_layer, axioms, eff_var, inner_goal, max_layer, goal):
     if inner_goal:
-        goal_var = len(primary_var)
+        goal_var = len(primary_var) + len(secondary_var)
         values = {0: str(tuple(inner_goal)) + "=False",
                   1: str(tuple(inner_goal)) + "=True"}
 
@@ -132,15 +129,6 @@ def introduce_new_goal_var(primary_var, secondary_var, axiom_layer, goal, initia
         axiom_layer[goal_var] = max_layer
         goal[goal_var] = 1
         initial_assignment[goal_var] = 0
-
-
-def introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial_assignment, axiom_layer, axioms, eff_var, inner_goal, max_layer):
-    if inner_goal:
-        values = {0:str(tuple(inner_goal))+"=False",1:str(tuple(inner_goal))+"=True"}
-        goal_var = len(primary_var) + len(secondary_var)
-        secondary_var[secondary_var] = values
-        sas.goal[goal_var] = 1
-        sas.initial_assignment[goal_var] = 0
 
     for prop in itertools.product(*[[(var, value) for value in primary_var[var]] for var in sorted(eff_var)]):
         second = len(primary_var) + len(secondary_var)
@@ -155,8 +143,7 @@ def introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial
         axioms.add(axiom)
 
         if inner_goal and set(inner_goal) <= set(prop):
-            goal_axiom = Axiom()
-            goal_axiom.from_prevail({second: 1}, {goal_var: (0, 1)})
+            goal_axiom= Axiom.from_prevail("axiom",{second: 1}, {goal_var: (0, 1)})
             axioms.add(goal_axiom)
 
 
@@ -234,6 +221,3 @@ if __name__ == '__main__':
     finally:
         end = time.time()
         print("Encode Time: {}s".format(end - start))
-        process = psutil.Process(os.getpid())
-        print("Encode Peak Memory: {} KB".format(
-            process.memory_info().rss / 1024))
