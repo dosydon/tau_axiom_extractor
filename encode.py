@@ -211,9 +211,9 @@ if __name__ == '__main__':
             end = time.time()
             print("Candidate Time: {}s".format(end - start))
         print("# of removed operators : {}".format(len(tau_operators)))
-        sas = encode(sas, tau_operators)
-
-        normalize(sas)
+        if len(tau_operators) > 0:
+            sas = encode(sas, tau_operators)
+            normalize(sas)
         with open(args.output, "w") as f:
             print(sas, file=f)
     except Exception as e:

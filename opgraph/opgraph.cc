@@ -56,7 +56,24 @@ void construct(vector<Operator>& ops){
 vector<int> get_candidates(vector<Operator>& ops){
 	vector<int> res;
 	construct(ops);
-	stronglyConnectedComponents(G,CON);
+	int num_components = stronglyConnectedComponents(G,CON);
+	vector<bool> flags(num_components, true);
+	int candidate_components = 0;
+	for(ListDigraph::ArcIt a(G); a!=INVALID; ++a){
+		int s = CON[(G.source(a))];
+		int t = CON[(G.target(a))];
+		if(s == t)
+			continue;
+		flags[t] = false;
+	}
+
+	for(int i = 0; i < flags.size() ; i++){
+		if(flags[i])
+			candidate_components++;
+	}
+
+	cout << "candidate_components:" << candidate_components << endl;
+
 	for(int i=0;i < V.size();i++){
 		if(CON[V[i]] > 0)
 			res.push_back(i);

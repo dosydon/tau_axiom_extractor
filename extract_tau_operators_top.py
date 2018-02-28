@@ -4,13 +4,17 @@ from sas3_extended import SAS3Extended
 from collections import defaultdict
 
 
-def from_var(sas, candidate_vars):
+def from_var(sas, candidate):
     res = []
     for op in sas.operators:
         eff_var = {var for var, to in op.achievement.items()}
         pre_var = {var for var, to in op.requirement.items()}
-        if eff_var <= candidate_vars:
+        if eff_var <= candidate:
             res.append(op)
+        elif pre_var >= candidate:
+            pass
+        else:
+            return []
     return res
 
 
@@ -44,9 +48,12 @@ def extract_tau_operators_top(sas):
             return candidate_vars
 
     if len(candidate_vars) > 0:
-        return from_var(sas, max(candidate_vars, key=len))
+        print("candidate_vars:{}".format(len(candidate_vars)))
+        candidate = max(candidate_vars, key=len)
+        res = from_var(sas, candidate)
+        return res
     else:
-        return set()
+        return []
 
 
 if __name__ == '__main__':
