@@ -122,8 +122,8 @@ def introduce_reachability_axioms(primary_var, axiom_layer, primary2secondary, e
 def introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial_assignment, axiom_layer, axioms, eff_var, inner_goal, max_layer, goal):
     if inner_goal:
         goal_var = len(primary_var) + len(secondary_var)
-        values = {0: str(tuple(inner_goal)) + "=False",
-                  1: str(tuple(inner_goal)) + "=True"}
+        values = {0: "NegatedAtom " + str(tuple(inner_goal)) + "=False",
+                  1: "Atom " + str(tuple(inner_goal)) + "=True"}
 
         secondary_var[goal_var] = values
         axiom_layer[goal_var] = max_layer
@@ -132,8 +132,8 @@ def introduce_base_axioms(primary_var, secondary_var, primary2secondary, initial
 
     for prop in itertools.product(*[[(var, value) for value in primary_var[var]] for var in sorted(eff_var)]):
         second = len(primary_var) + len(secondary_var)
-        secondary_var[second] = {0: "NegatedAtom" +
-                                 str(prop), 1: "Atom" + str(prop)}
+        secondary_var[second] = {0: "NegatedAtom " +
+                                 str(prop), 1: "Atom " + str(prop)}
         axiom_layer[second] = max_layer
         primary2secondary[prop] = second
         initial_assignment[second] = 0
@@ -216,6 +216,7 @@ if __name__ == '__main__':
             normalize(sas)
         with open(args.output, "w") as f:
             print(sas, file=f)
+#             print(sas.partial(), file=f)
     except Exception as e:
         raise e
     finally:

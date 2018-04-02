@@ -25,6 +25,9 @@ def extract_tau_operators_top(sas):
         if len(pre_var) > 0:
             candidate_vars.add(pre_var)
 
+    max_candidate = max(candidate_vars, key=lambda x:len(x))
+    print("candidate_max:{}".format(len(max_candidate)))
+
     for op in sas.operators:
         new_vars = set()
         eff_var = frozenset({var for var, to in op.achievement.items()})

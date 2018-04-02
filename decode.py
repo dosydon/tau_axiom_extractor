@@ -66,6 +66,7 @@ if __name__ == '__main__':
     sas = SAS3Extended.from_file(args.sas_file)
 
     complete_plan, statistics = decode(sas, plan_from_file(sas, args.sas_plan))
+    print("Decoded!")
     with open(args.sas_plan, "w") as f:
         for op in complete_plan:
             print("(" + op.name + ")")

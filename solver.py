@@ -17,7 +17,6 @@ class FD:
     def solve(self,subsas,sas,config=""):
         with open(self.temp_sas,"w") as f:
             print(subsas, file = f)
-#         subprocess.call(self.SCRIPT+" --preprocess {}".format(self.temp_sas),shell=True,stdout=self.DEVNULL)
         with open(self.log,"w") as f:
             subprocess.call(self.SCRIPT+" --plan-file {} {} --search 'astar(blind())'".format(self.temp_plan, self.temp_sas) ,shell=True,stdout=f)
             f.flush()

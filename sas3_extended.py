@@ -36,3 +36,15 @@ class SAS3Extended(SASExtended, SAS3):
         params["axiom_layer"] = copy.deepcopy(self.axiom_layer)
 
         return SAS3Extended(**params)
+
+    def partial(self):
+        res = ''
+        res += self.version2str()
+        res += self.metric2str()
+        res += self.variables2str()
+        res += self.mutex_group2str()
+        res += self.state2str()
+        res += self.goal2str()
+        res += self.operators2str()
+        res += self.rules2str()
+        return res
